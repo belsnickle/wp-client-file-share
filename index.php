@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: WP Client File Share
-Plugin URI: http://www.sideways8.com/wordpress/wp-client-file-share/
+Plugin URI: http://sideways8.com/plugins/wp-client-file-share
 Description: Share files between Admins and clients (users).  Users receive their "private" page to upload, and Admins can post files for the client to download.
 Author: Aaron Reimann & Adam Walker
-Version: 1.0
-Author URI: http://www.sideways8.com & http://www.aaronreimann.com
+Version: 1.0.1
+Author URI: http://www.sideways8.com
 
 Copyright 2011 Sideways 8 Interactive
 
@@ -28,9 +28,10 @@ register_deactivation_hook(__FILE__,"s8_wpcfs_deactivate");
 
 ##########
 ## Adding style sheet for front end
-function s8_wpcfs_add_css(){
-	if( !is_admin() )
+function s8_wpcfs_add_css() {
+	if (!is_admin()) {
 		wp_enqueue_style('wpf_css', plugins_url('/style.css', __FILE__) );
+	}
 }
 add_action('wp_print_styles', 's8_wpcfs_add_css');
 ##
@@ -45,8 +46,36 @@ function s8_wpcfs_option_page()
 	<h2>WP Client File Share Option Page</h2>
 	<p>Welcome to the WP Client File Share Plugin.  This plugin is at version 1.0 Beta 1.  Placement of this options page will probably change in the next release.</p>
 	</div>
+<?php
 
-	<?php
+
+?>
+
+
+	<form method="post" action="options.php">
+	<table>
+		<tr>
+			<td valign="top" style='text-align:right;'>&nbsp;</td>
+			<td valign="top"><input name='custom_upload_dir[s8-wpcfs-use-download-protect]' type='checkbox' id='s8-wpcfs-use-download-protect' 
+				<?php checked(get_option('uploads_use_yearmonth_folders'), 1); ?>
+				<?php if (!function_exists('dlprotect_func')) { print " disabled "; } ?>
+				/>
+
+				<label for='' title="">Use Download Protect</label>
+				<?php if (function_exists('dlprotect_func')) { ?>
+					You have it installed.
+				<?php } else { ?>
+					Why can't I check this? To protect your files, meaning, the user has to be logged in to see the file, you must have the 
+					<a href="http://wordpress.org/extend/plugins/download-protect/">Download Protect plugin</a>.					
+				<?php } ?>
+				</td>			
+		</tr>		
+	</table>
+	<p class="submit"><input type="submit" name="submit" value="<?php esc_html_e('Update Settings &raquo;','cud') ?>" /></p>
+	</form>
+<?php
+
+
 	$editors = s8_wpcfs_get_users_with_role('file_sharer');
 
 	if ($editors)
@@ -58,7 +87,9 @@ function s8_wpcfs_option_page()
 			$user_info = get_userdata($editor);
 			$user_page_title = $user_info->user_login . '\'s File Share Page';
 			$page = get_page_by_title($user_page_title);
+			?>
 			
+			<?php
 			echo '<li>';
 			echo $user_info->user_login, 
 				' / <a href="', $page->guid, '">View Page</a>',
@@ -75,7 +106,7 @@ function s8_wpcfs_option_page()
 
 function s8_wpcfs_plugin_menu()
 {
-	add_menu_page('WP Client File Share', 'WP Client File Share', 'manage_options', 'cc_comments-plugin', 's8_wpcfs_option_page');
+	add_menu_page('WP Client File Share', 'WP Client File Share', 'manage_options', 's8_client_file_share_plugin', 's8_wpcfs_option_page');
 }
 add_action('admin_menu', 's8_wpcfs_plugin_menu');
 
@@ -224,7 +255,6 @@ function s8_wpcfs_show_files($post)
 				the_attachment_link($attachment->ID, false);
 				echo '</p>';
 				echo '<p><a href="'.$attachment->guid.'" class="forced-download">Download</a></p>'; // forced-download class is to work with the plugin called "Forced Download"
-				
 				echo '<p>';
 					$attach_auth = get_userdata($attachment->post_author);
 					echo 'Author: '.$attach_auth->user_login;
@@ -291,10 +321,12 @@ add_action('admin_menu', 's8_wpcfs_redirect_to_url');
 
 function s8_wpcfs_hide_admin_bar()
 {
-	if (current_user_can('file_sharer'))
- 		return FALSE;
- 	else
- 		return TRUE;
+	if (is_user_logged_in()) {
+		if (current_user_can('file_sharer'))
+	 		return FALSE;
+	 	else
+	 		return TRUE;
+	}
 }
 add_filter('show_admin_bar', 's8_wpcfs_hide_admin_bar');
 ##
