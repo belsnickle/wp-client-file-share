@@ -1,12 +1,12 @@
 === WP Client File Share ===
 Contributors: Aaron Reimann, Adam Walker
 Donate link: http://sideways8.com/donate
-Tags: file share, client, share, file upload, frontend, front, end, upload
+Tags: file, share, client, private, frontend, upload, front, end
 Requires at least: 3.2
 Tested up to: 3.2.1
-Stable 1.0
+Stable 1.0.1
 
-Share files between Admins and clients (users).  Users receive their "private" page to upload, and Admins can post files for the client to download.
+Share files between Admins & users.  Users get a "private" page to upload / Admin can post files that user.
 
 == Description ==
 
@@ -14,7 +14,11 @@ This creates a way for Admins and clients (WP users) to share files. The client 
 
 == Installation ==
 
-Unzip and upload the plugin into the plugins directory and then activate it. Once the plugin has been activated a "Private Page" is created called "WP Client File Share" that the Admin owns.  The Admin will then have to create the user and give them a role of "File Sharer".  When the user is created, let us say the user is "client1", a page is created called "client′s File Share Page" and it is a child page of "WP Client File Share". An Admin will go to the user's page to upload the files for the client, and the client/user will login and upload their files on the same page.
+1. Unzip and upload the plugin into the plugins directory and then activate it.
+1. Once the plugin has been activated a "Private Page" is created called "WP Client File Share" that the Admin owns.
+1. The Admin will then have to create the user and give them a role of "File Sharer".
+1. When the user is created, let us say the user is "client1", a page is created called "client′s File Share Page" and it is a child page of "WP Client File Share". 
+1. An Admin will go to the user's page to upload the files for the client, and the client/user will login and upload their files on the same page.
 
 == Frequently Asked Questions ==
 
@@ -39,6 +43,9 @@ We can add any feature, but it is hard for us to dedicate time to things that do
 Please see the screencast to see the plugin in action.
 
 == Changelog ==
+
+= 1.0.1 =
+* Bugfix with admin bar
 
 = 1.0 =
 * Initial release
