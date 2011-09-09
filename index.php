@@ -4,7 +4,7 @@ Plugin Name: WP Client File Share
 Plugin URI: http://sideways8.com/plugins/wp-client-file-share
 Description: Share files between Admins and clients (users).  Users receive their "private" page to upload, and Admins can post files for the client to download.
 Author: Aaron Reimann & Adam Walker
-Version: 1.0.1
+Version: 1.0.2
 Author URI: http://www.sideways8.com
 
 Copyright 2011 Sideways 8 Interactive
@@ -44,38 +44,8 @@ function s8_wpcfs_option_page()
 	?>
 	<div class="wrap"><?php screen_icon(); ?>
 	<h2>WP Client File Share Option Page</h2>
-	<p>Welcome to the WP Client File Share Plugin.  This plugin is at version 1.0 Beta 1.  Placement of this options page will probably change in the next release.</p>
-	</div>
+	<p>Welcome to the WP Client File Share Plugin.  This plugin is at version 1.0.2.</p>
 <?php
-
-
-?>
-
-
-	<form method="post" action="options.php">
-	<table>
-		<tr>
-			<td valign="top" style='text-align:right;'>&nbsp;</td>
-			<td valign="top"><input name='custom_upload_dir[s8-wpcfs-use-download-protect]' type='checkbox' id='s8-wpcfs-use-download-protect' 
-				<?php checked(get_option('uploads_use_yearmonth_folders'), 1); ?>
-				<?php if (!function_exists('dlprotect_func')) { print " disabled "; } ?>
-				/>
-
-				<label for='' title="">Use Download Protect</label>
-				<?php if (function_exists('dlprotect_func')) { ?>
-					You have it installed.
-				<?php } else { ?>
-					Why can't I check this? To protect your files, meaning, the user has to be logged in to see the file, you must have the 
-					<a href="http://wordpress.org/extend/plugins/download-protect/">Download Protect plugin</a>.					
-				<?php } ?>
-				</td>			
-		</tr>		
-	</table>
-	<p class="submit"><input type="submit" name="submit" value="<?php esc_html_e('Update Settings &raquo;','cud') ?>" /></p>
-	</form>
-<?php
-
-
 	$editors = s8_wpcfs_get_users_with_role('file_sharer');
 
 	if ($editors)
@@ -102,6 +72,9 @@ function s8_wpcfs_option_page()
 	{
 		echo '<p>No "File Sharers" found.  To start sharing you need to create a new user with the role "File Sharer".';
 	}
+?>
+	</div>
+<?php
 }
 
 function s8_wpcfs_plugin_menu()

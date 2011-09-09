@@ -4,7 +4,7 @@ Donate link: http://sideways8.com/donate
 Tags: file, share, client, private, frontend, upload, front, end
 Requires at least: 3.2
 Tested up to: 3.2.1
-Stable 1.0.1
+Stable 1.0.2
 
 Share files between Admins & users.  Users get a "private" page to upload / Admin can post files that user.
 
@@ -43,6 +43,9 @@ We can add any feature, but it is hard for us to dedicate time to things that do
 Please see the screencast to see the plugin in action.
 
 == Changelog ==
+
+= 1.0.2 =
+* Bugfix with admin options page
 
 = 1.0.1 =
 * Bugfix with admin bar
