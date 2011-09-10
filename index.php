@@ -4,8 +4,9 @@ Plugin Name: WP Client File Share
 Plugin URI: http://sideways8.com/plugins/wp-client-file-share
 Description: Share files between Admins and clients (users).  Users receive their "private" page to upload, and Admins can post files for the client to download.
 Author: Aaron Reimann & Adam Walker
-Version: 1.0.2
+Version: 1.1.0
 Author URI: http://www.sideways8.com
+License: GPL3
 
 Copyright 2011 Sideways 8 Interactive
 
@@ -38,14 +39,63 @@ add_action('wp_print_styles', 's8_wpcfs_add_css');
 ##########
 
 ##########
+## Initializing vars to save
+function s8_wpcfs_init()
+{
+	register_setting('s8_wpcfs_options', 's8_wpcfs_use_download_protect');
+}
+add_action('admin_init', 's8_wpcfs_init');
+##
+##########
+
+##########
+## random functions, probably will contain more as this grows, then * will rename this
+function s8_wpcfs_check_dlprotect()
+{
+	if ( 
+		(get_option('s8_wpcfs_use_download_protect') == true) &&
+		(function_exists('dlprotect_func')) 
+		) {
+		return true;
+	}
+}
+##
+##########
+
+##########
 ## ADMIN
+function s8_wpcfs_get_users_with_role($role)
+{
+	$wp_user_search = new WP_User_Search($usersearch, $userspage, $role);
+	return $wp_user_search->get_results();
+}
+
 function s8_wpcfs_option_page()
 {
-	?>
+?>
 	<div class="wrap"><?php screen_icon(); ?>
 	<h2>WP Client File Share Option Page</h2>
-	<p>Welcome to the WP Client File Share Plugin.  This plugin is at version 1.0.2.</p>
-<?php
+	<p>Welcome to the WP Client File Share Plugin.  This plugin is at version 1.1.0.</p>
+	<form action="options.php" method="post" id="s8-wpcfs-options-form">
+		<?php settings_fields('s8_wpcfs_options'); ?>
+		<h4><label for="s8-wpcfs-options-use-download-protect">Do you want to use Download Protect?</label>
+		<input type="checkbox" id="s8_wpcfs_use_download_protect" 
+			name="s8_wpcfs_use_download_protect" value="true" 
+			<?php if (get_option('s8_wpcfs_use_download_protect') == TRUE) { print 'checked="yes"'; } ?>
+			<?php if (!function_exists('dlprotect_func')) { print " disabled "; } ?>/>
+		</h4>
+			<?php if (function_exists('dlprotect_func')) { ?>
+				<p>
+				By enabling this we assume you have read how to use Download Protect.  Make sure that your "Protected Download Directory" in "Download Protect" settings match WordPress's Settings -> Media -> Uploading Files, and that "Organize my uploads into month- and year-based folders" is not checked.
+				</p>
+			<?php } else { ?>
+				<p>
+				To use this feature you must have the <a href="http://wordpress.org/extend/plugins/download-protect/">Download Protect</a> plugin installed.
+				</p>
+			<?php } ?>
+		<p><input type="submit" name="submit" value="Update Settings" /></p>
+	</form>
+	<?php
 	$editors = s8_wpcfs_get_users_with_role('file_sharer');
 
 	if ($editors)
@@ -58,7 +108,7 @@ function s8_wpcfs_option_page()
 			$user_page_title = $user_info->user_login . '\'s File Share Page';
 			$page = get_page_by_title($user_page_title);
 			?>
-			
+	
 			<?php
 			echo '<li>';
 			echo $user_info->user_login, 
@@ -72,7 +122,7 @@ function s8_wpcfs_option_page()
 	{
 		echo '<p>No "File Sharers" found.  To start sharing you need to create a new user with the role "File Sharer".';
 	}
-?>
+	?>
 	</div>
 <?php
 }
@@ -82,12 +132,6 @@ function s8_wpcfs_plugin_menu()
 	add_menu_page('WP Client File Share', 'WP Client File Share', 'manage_options', 's8_client_file_share_plugin', 's8_wpcfs_option_page');
 }
 add_action('admin_menu', 's8_wpcfs_plugin_menu');
-
-function s8_wpcfs_get_users_with_role($role)
-{
-	$wp_user_search = new WP_User_Search($usersearch, $userspage, $role);
-	return $wp_user_search->get_results();
-}
 ##
 ##########
 
@@ -225,9 +269,15 @@ function s8_wpcfs_show_files($post)
 				echo '<div>';
 				echo '<p>';
 				echo apply_filters('post_content', $attachment->post_content);
-				the_attachment_link($attachment->ID, false);
 				echo '</p>';
-				echo '<p><a href="'.$attachment->guid.'" class="forced-download">Download</a></p>'; // forced-download class is to work with the plugin called "Forced Download"
+
+				if (s8_wpcfs_check_dlprotect()) {
+					$file = basename($attachment->guid);
+					print '<p>[dlprotect file="'.$file.'"]Download[/dlprotect]</p>';
+				} else {
+					echo '<p><a href="'.$attachment->guid.'" class="forced-download">Download</a></p>';					
+				}
+
 				echo '<p>';
 					$attach_auth = get_userdata($attachment->post_author);
 					echo 'Author: '.$attach_auth->user_login;
