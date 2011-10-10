@@ -4,7 +4,7 @@ Plugin Name: WP Client File Share
 Plugin URI: http://sideways8.com/plugins/wp-client-file-share
 Description: Share files between Admins and clients (users).  Users receive their "private" page to upload, and Admins can post files for the client to download.
 Author: Aaron Reimann & Adam Walker
-Version: 1.1.0
+Version: 1.2.0
 Author URI: http://www.sideways8.com
 License: GPL3
 
@@ -43,6 +43,10 @@ add_action('wp_print_styles', 's8_wpcfs_add_css');
 function s8_wpcfs_init()
 {
 	register_setting('s8_wpcfs_options', 's8_wpcfs_use_download_protect');
+	register_setting('s8_wpcfs_options', 's8_wpcfs_disable_client_upload');
+	register_setting('s8_wpcfs_options', 's8_wpcfs_alert_address');
+	register_setting('s8_wpcfs_options', 's8_wpcfs_disable_new_upload_alert');
+	register_setting('s8_wpcfs_options', 's8_wpcfs_number_of_files_to_show');
 }
 add_action('admin_init', 's8_wpcfs_init');
 ##
@@ -75,24 +79,49 @@ function s8_wpcfs_option_page()
 ?>
 	<div class="wrap"><?php screen_icon(); ?>
 	<h2>WP Client File Share Option Page</h2>
-	<p>Welcome to the WP Client File Share Plugin.  This plugin is at version 1.1.0.</p>
+	<p>Welcome to the WP Client File Share Plugin.  <span style="font-size: 10px">If you are upgrading notice we made some spelling changes in style.css.</span></p>
 	<form action="options.php" method="post" id="s8-wpcfs-options-form">
 		<?php settings_fields('s8_wpcfs_options'); ?>
-		<h4><label for="s8-wpcfs-options-use-download-protect">Do you want to use Download Protect?</label>
+		<p><label for="s8-wpcfs-options-use-download-protect">Do you want to use Download Protect?</label>
 		<input type="checkbox" id="s8_wpcfs_use_download_protect" 
 			name="s8_wpcfs_use_download_protect" value="true" 
-			<?php if (get_option('s8_wpcfs_use_download_protect') == TRUE) { print 'checked="yes"'; } ?>
+			<?php if (get_option('s8_wpcfs_use_download_protect') == TRUE) { print ' checked="yes" '; } ?>
 			<?php if (!function_exists('dlprotect_func')) { print " disabled "; } ?>/>
-		</h4>
+		</p>
 			<?php if (function_exists('dlprotect_func')) { ?>
 				<p>
-				By enabling this we assume you have read how to use Download Protect.  Make sure that your "Protected Download Directory" in "Download Protect" settings match WordPress's Settings -> Media -> Uploading Files, and that "Organize my uploads into month- and year-based folders" is not checked.
+				By enabling this we assume you have read how to use Download Protect.  Make sure that your "Protected Download Directory" in "Download Protect" settings match WordPress's Settings -> Media -> Uploading Files, and that "Organize my uploads into month and year based folders" is not checked.
 				</p>
 			<?php } else { ?>
 				<p>
 				To use this feature you must have the <a href="http://wordpress.org/extend/plugins/download-protect/">Download Protect</a> plugin installed.
 				</p>
 			<?php } ?>
+		
+		<p><label for="s8-wpcfs-options-disable-client-upload">Disable file-sharer upload?</label>
+		<input type="checkbox" id="s8_wpcfs_disable_client_upload" 
+			name="s8_wpcfs_disable_client_upload" value="true" 
+			<?php if (get_option('s8_wpcfs_disable_client_upload') == TRUE) { print 'checked="yes" '; } ?>/>
+		</p>
+		<p>
+			<label for="s8-wpcfs-options-number-of-file-to-show">Number of files to show?</label>
+			<input type="text" id="s8_wpcfs_number_of_files_to_show" name="s8_wpcfs_number_of_files_to_show"
+				value="<?php echo get_option('s8_wpcfs_number_of_files_to_show');?>" />
+				(ex. 14)
+		</p>	
+		<p>
+			<label for="s8-wpcfs-options-alert-address">Email address to get notified?</label>
+			<input type="text" id="s8_wpcfs_alert_address" name="s8_wpcfs_alert_address"
+				value="<?php echo get_option('s8_wpcfs_alert_address');?>" />
+				(ex. info@something.xyz)
+		</p>
+		<p>
+			<label for="s8-wpcfs-options-new-upload-alert">Disable new upload alert (both client and admin)?</label>
+			<input type="checkbox" id="s8_wpcfs_disable_new_upload_alert" 
+				name="s8_wpcfs_disable_new_upload_alert" value="true" 
+				<?php if (get_option('s8_wpcfs_disable_new_upload_alert') == TRUE) { print 'checked="yes" '; } ?>/>
+		</p>
+		
 		<p><input type="submit" name="submit" value="Update Settings" /></p>
 	</form>
 	<?php
@@ -107,9 +136,7 @@ function s8_wpcfs_option_page()
 			$user_info = get_userdata($editor);
 			$user_page_title = $user_info->user_login . '\'s File Share Page';
 			$page = get_page_by_title($user_page_title);
-			?>
-	
-			<?php
+
 			echo '<li>';
 			echo $user_info->user_login, 
 				' / <a href="', $page->guid, '">View Page</a>',
@@ -207,6 +234,21 @@ add_action ('user_register', "s8_wpcfs_create_user_page");
 
 ##########
 ## Putting it all together on the front end here
+function s8_wpcfs_get_a_name($user_id)
+{
+	$user_info = get_userdata($user_id);
+	if ( ($user_info->user_firstname != NULL) && ($user_info->user_lastname != NULL) ) {
+		$name = $user_info->user_firstname .' '. $user_info->user_lastname;
+	} elseif ($user_info->user_nicename != NULL) {
+		$name = $user_info->user_nicename;
+	} elseif ($user_info->nickname != NULL) {
+		$name = $user_info->nickname;
+	} else {
+		$name = $user_info->user_login;
+	}
+	return $name;
+}
+
 function insert_attachment($file_handler,$post_id,$setthumb='false') {
 	if ($_FILES[$file_handler]['error'] !== UPLOAD_ERR_OK) __return_false();
 
@@ -221,38 +263,72 @@ function insert_attachment($file_handler,$post_id,$setthumb='false') {
 	  'post_title' => $_POST['title'],
 	  'post_content' => $_POST['description'] )
 	);
-	
+
+	// check to see if user has disabled email notifications
+	if ( (get_option('s8_wpcfs_disable_new_upload_alert') == FALSE) ) {	// if they have not checked the "Disable new upload alert (both client and admin)?"
+		global $wp_query;
+
+		$blogname = get_settings( 'blogname' );
+		$siteurl = get_settings( 'siteurl' );
+		$email_to = get_option('s8_wpcfs_alert_address');
+
+		$post_id = $wp_query->post->ID;
+		$post_array = get_post($post_id);
+		$post_author_id = $post_array->post_author;
+		$author_data = get_userdata($post_author_id);
+		$author_email = $author_data->user_email;
+		$author_name = s8_wpcfs_get_a_name($post_author_id);
+
+		$user_id = get_current_user_id();		
+		$uploader_name = s8_wpcfs_get_a_name($user_id);
+
+		$subject = 'There is a new file on ' . $blogname;
+
+		$message = '
+		id: '. $post_author .'
+		'. $uploader_name .' just uploaded a new file called <strong>"'.$_POST[title].'"</strong> to '. $author_name .'\'s page.<br /><br />
+		 <a href="' . $siteurl . '">Click here</a> to see the site.
+		';
+		
+		add_filter('wp_mail_content_type',create_function('', 'return "text/html";')); // sets the email type to html
+		wp_mail($author_email, $subject, $message);
+		wp_mail($email_to, $subject, $message);
+	}
+
 	return $attach_id;
 }
 
 function s8_wpcfs_show_form()
 {
-	echo '<div id="s3-wpcfs-form">';
-	echo '<form method="POST" action="" enctype="multipart/form-data">';
-		echo '<fieldset>';
-		echo '<legend>Upload a File</legend>';
-			echo '<label for="title">Title</label>';
-			echo '<input type="text" name="title" id="title">';
-			echo '<br />';
-			echo '<label for="title">Description</label>';
-			echo '<textarea name="description" id="description"></textarea>';
-			echo '<br />';
-			echo '<label for="uploaded_attachment">Attachment</label>';
-			echo '<input type="file" name="uploaded_attachment" id="uploaded_attachment">';
-			echo '<br />';
-			echo '<input type="submit" value="Upload" id="submit" name="submit" />';
-		echo '</fieldset>';	
-		wp_nonce_field('client-file-upload', 'client-file-upload');
-	echo '</form>';
-	echo '</div>';
-	echo '<div id="s3-wpcfs-form-clear"></div>';
+	if ( (get_option('s8_wpcfs_disable_client_upload') == FALSE) OR (current_user_can('manage_options')) ) { // second function checks to see if admin
+		echo '<div id="s8-wpcfs-form">';
+		echo '<form method="POST" action="" enctype="multipart/form-data">';
+			echo '<fieldset>';
+			echo '<legend>Upload a File</legend>';
+				echo '<label for="title">Title</label>';
+				echo '<input type="text" name="title" id="title">';
+				echo '<br />';
+				echo '<label for="title">Description</label>';
+				echo '<textarea name="description" id="description"></textarea>';
+				echo '<br />';
+				echo '<label for="uploaded_attachment">Attachment</label>';
+				echo '<input type="file" name="uploaded_attachment" id="uploaded_attachment">';
+				echo '<br />';
+				echo '<input type="submit" value="Upload" id="submit" name="submit" />';
+			echo '</fieldset>';	
+			wp_nonce_field('client-file-upload', 'client-file-upload');
+		echo '</form>';
+		echo '</div>';
+		echo '<div id="s8-wpcfs-form-clear"></div>';
+	}
 }
 
 function s8_wpcfs_show_files($post)
 {
+	$number_of_posts = get_option('s8_wpcfs_number_of_files_to_show');
 	$args = array(
 		'post_type'		=> 'attachment',
-		'numberposts'	=> null,
+		'numberposts'	=> $number_of_posts,
 		'post_status'	=> null,
 		'post_parent'	=> $post->ID
 	);
@@ -261,11 +337,11 @@ function s8_wpcfs_show_files($post)
 	if ($attachments) {
 		foreach ($attachments as $attachment) {
 			echo '<div id="s8-wpcfs-attachment-'.$attachment->ID.'" class="s8-wpcfs-attachment">';
-				
+
 				echo '<h2>';
 				echo apply_filters('the_title', $attachment->post_title);
 				echo '</h2>';
-				
+
 				echo '<div>';
 				echo '<p>';
 				echo apply_filters('post_content', $attachment->post_content);
@@ -306,7 +382,7 @@ function append_to_post($content)
 					$newupload = insert_attachment('uploaded_attachment',$post->ID);
 				}
 			}
-			ob_start();
+			ob_start(); //turn on output buffering
             s8_wpcfs_show_form();
 			s8_wpcfs_show_files($post);
 			$content = $content . ob_get_clean();
@@ -330,7 +406,7 @@ function s8_wpcfs_redirect_to_url() {
 		$all_pages = $wp_query->query(array('post_type' => 'page'));
 		$pages = get_page_children($s8_wpcfs_main_page_id, $all_pages);
 
-		foreach ($pages as $page) // refactor in non-beta
+		foreach ($pages as $page) // refactor at some point
 		{
 			if ($page->post_author == $user_id) { $url = $page->guid; }
 			else { $url = site_url(); }

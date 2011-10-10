@@ -1,29 +1,29 @@
-div#s3-wpcfs-form {
+div#s8-wpcfs-form {
 	margin: 10px 0 10px 0;
 }
-div#s3-wpcfs-form-clear {
+div#s8-wpcfs-form-clear {
 	clear: left;
 }
-div#s3-wpcfs-form form fieldset {
+div#s8-wpcfs-form form fieldset {
 	margin: 0 0 15px;
     padding: 10px;
 	float: left;
 	border: 1px solid #aaa;
 	width: 70%;
 }
-div#s3-wpcfs-form form fieldset legend {
+div#s8-wpcfs-form form fieldset legend {
 	margin: 0 10px 0 10px;
 	padding: 0 5px 0 5px;
 	font-size: 125%;
 	font-weight: bold;
 }
-div#s3-wpcfs-form form fieldset label {
+div#s8-wpcfs-form form fieldset label {
 	float:left;
 	margin-right: 10px;
 	padding-top: 5px;
 	text-align:right;
 }
-div#s3-wpcfs-form form fieldset input {
+div#s8-wpcfs-form form fieldset input {
 	margin: 5px 0 5px 0;
 }
 

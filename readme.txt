@@ -1,10 +1,10 @@
 === WP Client File Share ===
 Contributors: Aaron Reimann, Adam Walker
-Donate link: http://sideways8.com/donate
+Donate link: http://sideways8.com/plugins/wp-client-file-share
 Tags: file, share, client, private, frontend, upload, front, end
 Requires at least: 3.2
 Tested up to: 3.2.1
-Stable 1.1.0
+Stable 1.2.0
 
 Share files between Admins & users.  Users get a "private" page to upload / Admin can post files that user.
 
@@ -22,6 +22,10 @@ This creates a way for Admins and clients (WP users) to share files. The client 
 
 == Frequently Asked Questions ==
 
+= The user's pages are not being created, what do I do?
+
+We have had a few situations where the individual pages have not been created when the user is created.  There have been a few plugins that have conflicted, disable all plugins and try again.
+
 = Is this secure?
 
 Yes and no.  Is an SFTP server more secure? Yes.  Can client's easily install a FTP program and upload to your server? No.
@@ -35,6 +39,11 @@ We can add any feature, but it is hard for us to dedicate time to things that do
 Please see the screencast to see the plugin in action:  <a href="http://sideways8.com/plugins/wp-client-file-share/">http://sideways8.com/plugins/wp-client-file-share/</a>
 
 == Changelog ==
+
+= 1.2.0 =
+* Added the option to disable "client/user" form upload so only admin see the form on the front-end
+* Notification system when a file is uploaded
+* Specify number of files to list option
 
 = 1.1.0 =
 * Adding limited integration with another plugin (Download Protect)
