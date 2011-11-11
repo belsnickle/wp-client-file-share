@@ -4,7 +4,7 @@ Plugin Name: WP Client File Share
 Plugin URI: http://sideways8.com/plugins/wp-client-file-share
 Description: Share files between Admins and clients (users).  Users receive their "private" page to upload, and Admins can post files for the client to download.
 Author: Aaron Reimann & Adam Walker
-Version: 1.2.0
+Version: 1.3.0
 Author URI: http://www.sideways8.com
 License: GPL3
 
@@ -58,7 +58,7 @@ function s8_wpcfs_check_dlprotect()
 {
 	if ( 
 		(get_option('s8_wpcfs_use_download_protect') == true) &&
-		(function_exists('dlprotect_func')) 
+		(function_exists('dlprotect_func'))
 		) {
 		return true;
 	}
@@ -79,7 +79,17 @@ function s8_wpcfs_option_page()
 ?>
 	<div class="wrap"><?php screen_icon(); ?>
 	<h2>WP Client File Share Option Page</h2>
-	<p>Welcome to the WP Client File Share Plugin.  <span style="font-size: 10px">If you are upgrading notice we made some spelling changes in style.css.</span></p>
+	<p>Welcome to the WP Client File Share Plugin.
+
+	<div class="postbox-container" style="width:70%;">
+		<div class="metabox-holder">
+			<div class="meta-box-sortables ui-sortable">
+
+				<div id="slider-settings" class="postbox">
+						<div class="handlediv" title="Click to toggle"><br /></div>
+						<h3 class="hndle"><span>Client File Share Settings</span></h3>
+							<div class="inside">
+
 	<form action="options.php" method="post" id="s8-wpcfs-options-form">
 		<?php settings_fields('s8_wpcfs_options'); ?>
 		<p><label for="s8-wpcfs-options-use-download-protect">Do you want to use Download Protect?</label>
@@ -124,12 +134,21 @@ function s8_wpcfs_option_page()
 		
 		<p><input type="submit" name="submit" value="Update Settings" /></p>
 	</form>
+					</div>
+				</div>
+			
+
+				<div id="donate" class="postbox">
+					<div class="handlediv" title="Click to toggle"><br /></div> 
+					<h3 class="hndle"><span>File Share Users</span></h3>
+					<div class="inside">
+					<p>
 	<?php
 	$editors = s8_wpcfs_get_users_with_role('file_sharer');
 
 	if ($editors)
 	{
-		echo '<ul>';
+		echo '<table class="s8-wpcfs-table">';
 		foreach($editors as $editor)
 		{
 			$s8_wpcfs_main_page_id = get_option('WP_Client_File_Share');
@@ -137,19 +156,64 @@ function s8_wpcfs_option_page()
 			$user_page_title = $user_info->user_login . '\'s File Share Page';
 			$page = get_page_by_title($user_page_title);
 
-			echo '<li>';
-			echo $user_info->user_login, 
-				' / <a href="', $page->guid, '">View Page</a>',
-				' / <a href="mailto:', $user_info->user_email, '">Email User</a>';
-			echo '</li>';
+			echo '<tr>';
+			echo '<td>' . $user_info->user_login . '</td>';
+			echo '<td><a href="' . $page->guid . '">View Page</a></td>';
+			echo '<td><a href="mailto:' . $user_info->user_email . '">Email User</td>';
 		}
-		echo '</ul>';
+		echo '</tr>';
+		echo '</table>';
 	}
 	else
 	{
 		echo '<p>No "File Sharers" found.  To start sharing you need to create a new user with the role "File Sharer".';
 	}
 	?>
+					</p>
+					</div> 
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+
+	<div class="postbox-container" style="width:20%;">
+		<div class="metabox-holder">
+			<div class="meta-box-sortables ui-sortable">
+		
+				<div id="donate" class="postbox">
+					<div class="handlediv" title="Click to toggle"><br /></div> 
+					<h3 class="hndle"><span>Please donate!</span></h3>
+					<div class="inside">
+						<p>Any amount helps, and we work even harder if we can afford a latte here and there!</p>
+							<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+							<input type="hidden" name="cmd" value="_donations">
+							<input type="hidden" name="business" value="billing@sideways8.net">
+							<input type="hidden" name="lc" value="US">
+							<input type="hidden" name="item_name" value="Sideways 8 Interactive">
+							<input type="hidden" name="no_note" value="0">
+							<input type="hidden" name="currency_code" value="USD">
+							<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+							<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="">
+							<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1"><br />
+							</form>
+					</div> 
+				</div>
+				
+				<div id="like" class="postbox">
+					<div class="handlediv" title="Click to toggle"><br /></div> 
+					<h3 class="hndle"><span>Be in the know!</span></h3>
+					<div class="inside">
+						<p>We want to keep informed when other features are being added. <a href="http://eepurl.com/g5jVD">Please subscribe to our newsletter</a> to be in the know. We are developers like you, and we hate spam so won't spam you.
+						</p>
+					</div> 
+				</div>
+			
+			</div> 
+		</div>
+	</div>
+
 	</div>
 <?php
 }
@@ -406,14 +470,19 @@ function s8_wpcfs_redirect_to_url() {
 		$all_pages = $wp_query->query(array('post_type' => 'page'));
 		$pages = get_page_children($s8_wpcfs_main_page_id, $all_pages);
 
-		foreach ($pages as $page) // refactor at some point
+		$users_pages = array();
+		foreach ($pages as $page)
 		{
-			if ($page->post_author == $user_id) { $url = $page->guid; }
-			else { $url = site_url(); }
+			if ($page->post_author == $user_id) 
+			{
+				array_push($users_pages, $page->guid);
+				//$url = $page->guid;
+			}
+//			else { $url = site_url(); }
 		}
-
-		wp_redirect($url);
-		exit();
+		var_dump($users_pages);
+//		wp_redirect($url);
+//		exit();
 	}
 }
 add_action('admin_menu', 's8_wpcfs_redirect_to_url');
@@ -435,11 +504,13 @@ add_filter('show_admin_bar', 's8_wpcfs_hide_admin_bar');
 ## Deactivation Code
 function s8_wpcfs_deactivate() 
 {
+	/*
 	$s8_wpcfs_main_page_id = get_option('WP_Client_File_Share'); // getting this from options
 	$s8_wpcfs_main_page = array(); // creating the array and re-Titling the plug-in's main page
 	$s8_wpcfs_main_page['ID'] = $s8_wpcfs_main_page_id;
 	$s8_wpcfs_main_page['post_title'] = 'WP Client File Share - Deactivated: ' . date("Y-m-d H:i:s");
 	wp_update_post($s8_wpcfs_main_page);
+	*/
 	error_log("WP Client File Share deactivated");
 }
 ##
