@@ -4,7 +4,7 @@ Plugin Name: WP Client File Share
 Plugin URI: http://sideways8.com/plugins/wp-client-file-share
 Description: Share files between Admins and clients (users).  Users receive their "private" page to upload, and Admins can post files for the client to download.
 Author: Aaron Reimann & Adam Walker
-Version: 1.3.0
+Version: 1.3.1
 Author URI: http://www.sideways8.com
 License: GPL3
 
@@ -476,13 +476,12 @@ function s8_wpcfs_redirect_to_url() {
 			if ($page->post_author == $user_id) 
 			{
 				array_push($users_pages, $page->guid);
-				//$url = $page->guid;
+				$url = $page->guid;
 			}
-//			else { $url = site_url(); }
+			else { $url = site_url(); }
 		}
-		var_dump($users_pages);
-//		wp_redirect($url);
-//		exit();
+		wp_redirect($url);
+		exit();
 	}
 }
 add_action('admin_menu', 's8_wpcfs_redirect_to_url');

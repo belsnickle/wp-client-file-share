@@ -4,7 +4,7 @@ Donate link: http://sideways8.com/plugins/wp-client-file-share
 Tags: file, share, client, private, frontend, upload, front, end
 Requires at least: 3.2
 Tested up to: 3.2.1
-Stable 1.3.0
+Stable 1.3.1
 
 Share files between Admins & users.  Users get a "private" page to upload / Admin can post files that user.
 
@@ -39,6 +39,9 @@ We can add any feature, but it is hard for us to dedicate time to things that do
 Please see the screencast to see the plugin in action:  <a href="http://sideways8.com/plugins/wp-client-file-share/">http://sideways8.com/plugins/wp-client-file-share/</a>
 
 == Changelog ==
+
+= 1.3.1 =
+* Fixes redirect issue for logged in clients
 
 = 1.3.0 =
 * Adds newsletter signup on the backend
